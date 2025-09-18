@@ -1,50 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Payout</title>
-  <style>
-    table { border-collapse: collapse; width: 80%; margin: 20px auto; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    input[type="number"] { width: 80px; padding: 5px; }
-    .buttons { text-align: center; margin-top: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Payout</title>
 </head>
 <body>
-  <h1>Payout Menu - {{ employee }}</h1>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>
-        {% for msg in messages %}
-          <li style="color:red;">{{ msg }}</li>
+    <h2>Payout for {{ session.get('employee') }}</h2>
+    <form method="POST">
+        {% for mat, price in prices %}
+            <label>{{ mat }} ({{ price }} per kg):</label>
+            <input type="number" name="{{ mat }}" step="0.01" min="0"><br>
         {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-  <form method="post">
-    <input type="hidden" name="employee" value="{{ employee }}">
-    <table>
-      <tr>
-        <th>#</th>
-        <th>Material</th>
-        <th>Price (per kg)</th>
-        <th>Weight (kg)</th>
-      </tr>
-      {% for mat, price in prices %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td>{{ mat }}</td>
-        <td>R {{ price }}</td>
-        <td><input type="number" name="weights[{{ mat }}]" step="0.01" min="0"></td>
-      </tr>
-      {% endfor %}
-    </table>
-    <div class="buttons">
-      <button type="submit">Generate Receipt</button>
-      <button type="button" onclick="window.location.href='/'">Back</button>
-    </div>
-  </form>
+        <button type="submit">Calculate</button>
+    </form>
 </body>
 </html>
 

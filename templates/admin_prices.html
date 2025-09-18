@@ -1,36 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Edit Prices</title>
+    <meta charset="UTF-8">
+    <title>Update Prices</title>
 </head>
 <body>
-  <h1>Edit Prices</h1>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>
-        {% for msg in messages %}
-          <li style="color:green;">{{ msg }}</li>
+    <h2>Update Prices</h2>
+    <form method="POST">
+        {% for mat, price in prices %}
+            <label>{{ mat }}:</label>
+            <input type="number" name="{{ mat }}" value="{{ price }}" step="0.01" min="0"><br>
         {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-  <form method="post">
-    <table>
-      <tr>
-        <th>Material</th>
-        <th>Unit Price</th>
-      </tr>
-      {% for mat, price in prices %}
-      <tr>
-        <td><input type="text" name="material" value="{{ mat }}"></td>
-        <td><input type="number" step="0.01" name="unitprice" value="{{ price }}"></td>
-      </tr>
-      {% endfor %}
-    </table>
-    <button type="submit">Update Prices</button>
-  </form>
-  <button onclick="window.location.href='{{ url_for('admin_dashboard') }}'">Back</button>
+        <button type="submit">Update</button>
+    </form>
+    <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
 </body>
 </html>
 

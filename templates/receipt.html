@@ -1,45 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Receipt</title>
-  <style>
-    table { border-collapse: collapse; width: 80%; margin: 20px auto; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    .buttons { text-align: center; margin-top: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Receipt</title>
 </head>
 <body>
-  <h1>Receipt - {{ employee }}</h1>
-  <p>Transaction ID: {{ txn_id }}</p>
-  <table>
-    <tr>
-      <th>#</th>
-      <th>Material</th>
-      <th>Weight (kg)</th>
-      <th>Price/kg</th>
-      <th>Cost</th>
-    </tr>
-    {% for item in items %}
-    <tr>
-      <td>{{ loop.index }}</td>
-      <td>{{ item.mat }}</td>
-      <td>{{ item.weight }}</td>
-      <td>R {{ item.price }}</td>
-      <td>R {{ item.cost }}</td>
-    </tr>
-    {% endfor %}
-    <tr>
-      <th colspan="4">Total</th>
-      <th>R {{ total }}</th>
-    </tr>
-  </table>
-  <div class="buttons">
-    <button onclick="window.print()">Print Receipt</button>
-    <button onclick="window.location.href='/employee'">New Transaction</button>
-    <button onclick="window.location.href='/'">Home</button>
-  </div>
+    <h2>Receipt for {{ employee }}</h2>
+    <table border="1">
+        <tr>
+            <th>Material</th>
+            <th>Weight</th>
+            <th>Cost</th>
+        </tr>
+        {% for mat, weight, cost in items %}
+        <tr>
+            <td>{{ mat }}</td>
+            <td>{{ weight }}</td>
+            <td>{{ cost }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2">Total</td>
+            <td>{{ total }}</td>
+        </tr>
+    </table>
+    <a href="{{ url_for('employee') }}">Back</a>
 </body>
 </html>
 
