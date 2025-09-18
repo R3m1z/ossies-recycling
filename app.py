@@ -1,14 +1,14 @@
 # app.py
 import os
+import os
 import json
-import uuid
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# ---------- Config ----------
-SERVICE_ACCOUNT_FILE = "service-account.json"  # Put your JSON here
+# Load Google Sheets credentials from environment variable
+creds_dict = json.loads(os.environ['GOOGLE_CREDS_JSON'])
+credentials = service_account.Credentials.from_service_account_info(creds_dict)
+service = build('sheets', 'v4', credentials=credentials)
 SHEET_ID = "1g6LBASqzygH2KFWdik4aj2iSJfr_jNibK0GOm4geYN4"  # replace with your spreadsheet ID
 ADMIN_USER = "admin"
 ADMIN_PASS = "Admin@123"
