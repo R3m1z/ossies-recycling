@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transactions</title>
+  <style>
+    table { border-collapse: collapse; width: 90%; margin: 20px auto; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>Transactions</h1>
+  <table>
+    <tr>
+      {% for h in headers %}
+        <th>{{ h }}</th>
+      {% endfor %}
+    </tr>
+    {% for row in rows %}
+    <tr>
+      {% for cell in row %}
+        <td>{{ cell }}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+  <button onclick="window.location.href='{{ url_for('admin_dashboard') }}'">Back</button>
+</body>
+</html>
+
