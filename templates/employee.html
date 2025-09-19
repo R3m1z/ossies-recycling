@@ -2,23 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Employee Login - Ossie's Recycling</title>
+<title>Employee Login</title>
 <style>
-body { font-family: 'Segoe UI', sans-serif; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
-h1 { color:#1e3a8a; margin-bottom:1rem; }
-form { display:flex; flex-direction:column; width:300px; }
-input { padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; }
-button { background:#1e3a8a; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
-button:hover { background:#3749c0; }
+body {font-family:'Segoe UI'; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0;}
+h1{color:#1e3a8a;}
+form {display:flex; flex-direction:column; align-items:center;}
+input, button {padding:10px; margin:5px; border-radius:5px;}
+button {background:#1e3a8a; color:white; border:none; cursor:pointer;}
+button:hover {background:#3749c0;}
 </style>
 </head>
 <body>
 <h1>Employee Login</h1>
 <form method="POST">
-<label>Who's scaling today?</label>
-<input type="text" name="employee_name" placeholder="Enter your name" required>
-<button type="submit">Continue</button>
+<input type="text" name="employee_name" placeholder="Your Name">
+<button type="submit">Enter</button>
 </form>
 </body>
 </html>
