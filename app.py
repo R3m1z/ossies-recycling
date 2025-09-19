@@ -180,6 +180,79 @@ def home():
 
 
 # -------- Employee flow --------
+
+# -------- Employee flow --------
+@app.route("/employee/payout", methods=["GET", "POST"])
+@employee_required
+def employee_payout():
+    """
+    Renders employee_payout.html with materials dict.
+    Form fields must be named exactly as the material strings (matching the template).
+    On POST parses weights, stores them in session, writes to Transactions sheet, and redirects to receipt.
+    """
+    employee_name = session.get("employee_name")
+    materials = get_materials()
+
+    if request.method == "POST":
+        # read each material input by name
+        weight_dict = {}
+        for mat in materials.keys():
+            raw = request.form.get(mat, "").strip()
+            if raw == "":
+                raw = "0"
+            try:
+                weight = float(raw)
+            except Exception:
+                weight = 0.0
+            weight_dict[mat] = weight
+
+        # store in session for receipt rendering
+        session["weight_dict"] = weight_dict
+
+        # persist to sheet
+        success, err = append_transactions(employee_name, weight_dict)
+        if not success:
+            flash(f"Warning: transaction not saved to sheet: {err}", "danger")
+        else:
+            flash("Transaction saved.", "success")
+
+        return redirect(url_for("employee_receipt"))
+
+    # GET
+    return render_template("employee_payout.html", employee_name=employee_name, materials=materials)
+
+
+@app.route("/employee/receipt")
+@employee_required
+def employee_receipt():
+    """
+    Renders receipt.html using session['weight_dict'] and live prices.
+    Filters out materials with zero weight.
+    """
+    employee_name = session.get("employee_name")
+    weight_dict = session.get("weight_dict", {}) or {}
+    prices = get_materials()
+
+    # Prepare dict compatible with new receipt.html
+    # Only include materials with weight > 0
+    materials_for_receipt = {}
+    total = 0.0
+    for mat, weight in weight_dict.items():
+        price = float(prices.get(mat, 0.0))
+        if weight > 0:
+            amount = round(weight * price, 2)
+            materials_for_receipt[mat] = {'weight': weight, 'price': amount}
+            total += amount
+
+    total = round(total, 2)
+    return render_template(
+        "receipt.html",
+        client_name=employee_name,  # or replace with a "client_name" field if you have it
+        date=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        materials=materials_for_receipt,
+        total=total
+    )
+
 @app.route("/employee/login", methods=["GET", "POST"])
 def employee_login():
     """
