@@ -1,77 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ossie's Recycling</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            color: #333;
-        }
-
-        h1 {
-            color: #1e3a8a;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-
-        a.button {
-            background-color: #1e3a8a;
-            color: white;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin: 0 10px;
-            display: inline-block;
-        }
-
-        a.button:hover {
-            background-color: #3749c0;
-        }
-
-        .buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2rem;
-            }
-            p {
-                font-size: 1rem;
-            }
-            a.button {
-                padding: 10px 20px;
-                margin: 5px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ossie's Recycling</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; color:#333; }
+h1 { color:#1e3a8a; font-size:2.5rem; margin-bottom:1rem; }
+p { font-size:1.2rem; margin-bottom:2rem; }
+a.button { background-color:#1e3a8a; color:white; text-decoration:none; padding:12px 25px; border-radius:8px; font-weight:bold; transition:0.3s; margin:10px; display:inline-block; }
+a.button:hover { background-color:#3749c0; }
+.buttons { display:flex; justify-content:center; flex-wrap:wrap; }
+</style>
 </head>
 <body>
-    <h1>Ossie's Recycling</h1>
-    <p>Select your portal below:</p>
-    <div class="buttons">
-        <a href="/employee" class="button">Employee</a>
-        <a href="/admin" class="button">Admin</a>
-    </div>
+<h1>Ossie's Recycling</h1>
+<p>Select your portal:</p>
+<div class="buttons">
+<a href="/employee" class="button">Employee</a>
+<a href="/admin" class="button">Admin</a>
+</div>
 </body>
 </html>
-
