@@ -1,99 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ossie's Recycling - Payout</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        h1 {
-            color: #1e3a8a;
-            text-align: center;
-        }
-        .user-info {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-        th {
-            background-color: #1e3a8a;
-            color: white;
-        }
-        input[type="number"] {
-            width: 80px;
-            padding: 5px;
-            text-align: right;
-        }
-        .buttons {
-            text-align: center;
-            margin-top: 20px;
-        }
-        a.button, button {
-            background-color: #1e3a8a;
-            color: white;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin: 0 10px;
-            cursor: pointer;
-            border: none;
-        }
-        a.button:hover, button:hover {
-            background-color: #3749c0;
-        }
-        @media (max-width: 600px) {
-            table, th, td {
-                font-size: 0.9rem;
-            }
-            input[type="number"] {
-                width: 60px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1>Ossie's Recycling - Payout</h1>
-    <div class="user-info">
-        <p>Logged in as: <strong>{{ employee_name }}</strong></p>
-    </div>
-
-    <form action="{{ url_for('generate_receipt') }}" method="POST">
-        <table>
+{% extends "base.html" %}
+{% block content %}
+<h2>Payout Entry</h2>
+<p class="text-muted">Logged in as <strong>{{ employee_name }}</strong></p>
+<form method="post">
+    <table class="table table-bordered">
+        <thead class="table-light">
             <tr>
                 <th>Material</th>
-                <th>Price per kg</th>
+                <th>Price/kg</th>
                 <th>Weight (kg)</th>
             </tr>
-            {% for material, price in materials.items() %}
+        </thead>
+        <tbody>
+            {% for mat, price in materials.items() %}
             <tr>
-                <td>{{ material }}</td>
-                <td>R{{ price }}</td>
-                <td><input type="number" name="weights[{{ material }}]" min="0" step="0.01"></td>
+                <td>{{ mat }}</td>
+                <td>R {{ price }}</td>
+                <td><input type="number" step="0.01" name="{{ mat }}" class="form-control"></td>
             </tr>
             {% endfor %}
-        </table>
-
-        <div class="buttons">
-            <a href="{{ url_for('employee_home') }}" class="button">Back</a>
-            <button type="submit">Generate Receipt</button>
-        </div>
-    </form>
-</body>
-</html>
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-between">
+        <a href="{{ url_for('employee_login') }}" class="btn btn-secondary">Back</a>
+        <button type="submit" class="btn btn-success">Generate Receipt</button>
+    </div>
+</form>
+{% endblock %}
