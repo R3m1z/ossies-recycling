@@ -1,17 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Server Error</title>
-<style>
-body{font-family:'Segoe UI'; background:#f0f4f8; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0;}
-h1{color:#d32f2f;}
-p{color:#333;}
-</style>
-</head>
-<body>
-<h1>500 - Server Error</h1>
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-danger">Server Error</h2>
 <p>{{ error }}</p>
-<a href="/" class="button">Back to Home</a>
-</body>
-</html>
+<a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+{% endblock %}
