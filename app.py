@@ -1,154 +1,105 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from functools import wraps
 
-# Optional: spreadsheet support
-try:
-    import gspread
-    from google.oauth2.service_account import Credentials
-    GSHEET_AVAILABLE = True
-except Exception:
-    GSHEET_AVAILABLE = False
+# Google Sheets support
+import gspread
+from google.oauth2.service_account import Credentials
 
-# ----------------------
-# App setup
-# ----------------------
-app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = os.environ.get("SECRET_KEY", "Passw0rd@123")
+app = Flask(__name__, template_folder="templates")
+app.secret_key = os.environ.get("SECRET_KEY", "replace_this_with_env_secret")
 
 # Admin credentials
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS = os.environ.get("ADMIN_PASS", "password123")
 
 # Google Sheets config
-SHEET_NAME = "RecycleWebApp"  # your sheet
-GOOGLE_CREDENTIALS = os.environ.get("GOOGLE_CREDS_JSON", None)
+SHEET_ID = os.environ.get("SHEET_ID", "")
+GOOGLE_CREDS_JSON = os.environ.get("GOOGLE_CREDS_JSON", "")
 
-# ----------------------
-# Helpers
-# ----------------------
-def login_required(f):
+# ----------- Google Sheets helper ------------
+def get_gspread_client():
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(json.loads(GOOGLE_CREDS_JSON), scopes=scopes)
+    return gspread.authorize(creds)
+
+def get_materials():
+    """Returns a dict of {material_name: price} from 'Prices' sheet"""
+    try:
+        client = get_gspread_client()
+        sheet = client.open_by_key(SHEET_ID).worksheet("Prices")
+        records = sheet.get_all_records()
+        materials = {row["Material"]: row["Price"] for row in records}
+        return materials
+    except Exception as e:
+        app.logger.error(f"Error fetching materials: {e}")
+        return {}
+
+# ----------- Decorators ------------
+def admin_required(f):
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         if not session.get("admin_logged_in"):
             return redirect(url_for("admin_login"))
         return f(*args, **kwargs)
-    return decorated
+    return wrapper
 
-def get_gspread_client():
-    if not GSHEET_AVAILABLE:
-        return None
-    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = None
-    if GOOGLE_CREDENTIALS:
-        try:
-            info = json.loads(GOOGLE_CREDENTIALS)
-            creds = Credentials.from_service_account_info(info, scopes=scopes)
-        except Exception as e:
-            app.logger.warning("Failed to load GOOGLE_CREDENTIALS: %s", e)
-    if creds is None and os.path.exists("credentials.json"):
-        try:
-            creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        except Exception as e:
-            app.logger.warning("Failed to load credentials.json: %s", e)
-    if creds is None:
-        return None
-    try:
-        client = gspread.authorize(creds)
-        return client
-    except Exception as e:
-        app.logger.error("gspread authorize error: %s", e)
-        return None
+# ----------- Routes ------------
 
-def get_transactions_sheet():
-    client = get_gspread_client()
-    if client is None:
-        return None
-    try:
-        sheet = client.open(SHEET_NAME).worksheet("Transactions")
-        return sheet
-    except Exception as e:
-        app.logger.error("Error opening Transactions sheet: %s", e)
-        return None
-
-def get_prices_sheet():
-    client = get_gspread_client()
-    if client is None:
-        return None
-    try:
-        sheet = client.open(SHEET_NAME).worksheet("Prices")
-        return sheet
-    except Exception as e:
-        app.logger.error("Error opening Prices sheet: %s", e)
-        return None
-
-# ----------------------
-# Routes
-# ----------------------
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# ----------------------
-# Employee
-# ----------------------
+# ----- Employee Flow -----
 @app.route("/employee", methods=["GET", "POST"])
-def employee():
+def employee_home():
     if request.method == "POST":
-        session["employee_name"] = request.form.get("employee_name")
-        if not session["employee_name"]:
-            flash("Enter a name to continue.", "danger")
-            return redirect(url_for("employee"))
-        return redirect(url_for("payout"))
-    return render_template("employee.html", employee_name=session.get("employee_name"))
+        name = request.form.get("employee_name", "").strip()
+        if not name:
+            flash("Please enter your name", "danger")
+            return redirect(url_for("employee_home"))
+        session["employee_name"] = name
+        return redirect(url_for("employee_payout"))
+    return render_template("employee_home.html")
 
 @app.route("/employee/payout", methods=["GET", "POST"])
-def payout():
+def employee_payout():
     employee_name = session.get("employee_name")
     if not employee_name:
-        return redirect(url_for("employee"))
+        return redirect(url_for("employee_home"))
 
-    prices_sheet = get_prices_sheet()
-    prices = []
-    if prices_sheet:
-        prices = prices_sheet.get_all_records()  # list of dicts: {"Material":..., "Price":...}
+    materials = get_materials()
 
     if request.method == "POST":
-        # collect submitted materials and amounts
-        materials = []
-        for i, price_row in enumerate(prices):
-            mat = price_row["Material"]
-            amount = request.form.get(f"amount_{i}", "")
-            if amount:
-                materials.append({
-                    "material": mat,
-                    "weight": amount,
-                    "cost": float(amount) * float(price_row["Price"])
-                })
-
-        # save to Transactions sheet
-        trans_sheet = get_transactions_sheet()
-        if trans_sheet:
-            for mat in materials:
-                trans_sheet.append_row([
-                    employee_name, mat["material"], mat["weight"], mat["cost"]
-                ])
-        # store in session to display in receipt
-        session["last_receipt"] = materials
+        weights = request.form.get("weights")
+        if not weights:
+            flash("Please enter weights", "danger")
+            return redirect(url_for("employee_payout"))
+        # Store submitted weights in session for receipt
+        session["weights"] = request.form.getlist("weights")
+        # Transform into dict
+        weight_dict = {k: float(v or 0) for k, v in request.form.get("weights", {}).items()}
+        session["weight_dict"] = weight_dict
         return redirect(url_for("receipt"))
 
-    return render_template("payout.html", employee_name=employee_name, prices=prices)
+    return render_template("employee_payout.html", employee_name=employee_name, materials=materials)
 
 @app.route("/employee/receipt")
 def receipt():
-    materials = session.get("last_receipt", [])
-    employee_name = session.get("employee_name", "Unknown")
-    return render_template("receipt.html", materials=materials, employee_name=employee_name)
+    employee_name = session.get("employee_name")
+    weight_dict = session.get("weight_dict", {})
+    materials = get_materials()
+    receipt_items = []
+    total = 0
+    for mat, weight in weight_dict.items():
+        price = materials.get(mat, 0)
+        amount = price * weight
+        receipt_items.append({"material": mat, "weight": weight, "price": price, "amount": amount})
+        total += amount
+    return render_template("receipt.html", employee_name=employee_name, items=receipt_items, total=total)
 
-# ----------------------
-# Admin
-# ----------------------
+# ----- Admin Flow -----
 @app.route("/admin", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -157,62 +108,46 @@ def admin_login():
         if user == ADMIN_USER and pwd == ADMIN_PASS:
             session["admin_logged_in"] = True
             return redirect(url_for("admin_dashboard"))
-        else:
-            flash("Invalid credentials.", "danger")
-            return redirect(url_for("admin_login"))
+        flash("Invalid credentials", "danger")
     return render_template("admin_login.html")
 
 @app.route("/admin/logout")
 def admin_logout():
     session.pop("admin_logged_in", None)
-    flash("Logged out.", "info")
     return redirect(url_for("admin_login"))
 
 @app.route("/admin/dashboard")
-@login_required
+@admin_required
 def admin_dashboard():
-    # show today's transactions
-    trans_sheet = get_transactions_sheet()
-    transactions = []
-    if trans_sheet:
-        transactions = trans_sheet.get_all_records()
-    return render_template("admin_dashboard.html", transactions=transactions)
+    # TODO: Load today's transactions from Google Sheets
+    return render_template("admin_dashboard.html")
 
 @app.route("/admin/prices", methods=["GET", "POST"])
-@login_required
+@admin_required
 def admin_prices():
-    prices_sheet = get_prices_sheet()
-    prices = []
-    if prices_sheet:
-        prices = prices_sheet.get_all_records()
+    materials = get_materials()
     if request.method == "POST":
-        # update prices
-        for i, row in enumerate(prices):
-            new_price = request.form.get(f"price_{i}")
+        # update Google Sheets prices
+        client = get_gspread_client()
+        sheet = client.open_by_key(SHEET_ID).worksheet("Prices")
+        for i, material in enumerate(materials.keys(), start=2):
+            new_price = request.form.get(material)
             if new_price:
-                prices_sheet.update_cell(i+2, 2, new_price)  # assuming header in row 1
+                sheet.update(f"B{i}", float(new_price))
         flash("Prices updated!", "success")
         return redirect(url_for("admin_prices"))
-    return render_template("admin_prices.html", prices=prices)
+    return render_template("admin_prices.html", materials=materials)
 
-# ----------------------
-# Error handler
-# ----------------------
+@app.route("/admin/transactions")
+@admin_required
+def admin_transactions():
+    # TODO: load transactions from Google Sheets
+    return render_template("admin_transactions.html")
+
+# -------- Error Handling ---------
 @app.errorhandler(500)
 def server_error(e):
     return render_template("500.html", error=e), 500
 
-# ----------------------
-# Healthcheck
-# ----------------------
-@app.route("/_health")
-def health():
-    return jsonify({"status": "ok"})
-
-# ----------------------
-# Run
-# ----------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
-    app.run(host="0.0.0.0", port=port, debug=debug)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
