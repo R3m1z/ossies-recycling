@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="p-3">
+<div class="container">
 <h3>Hello {{ employee_name }}</h3>
 <form method="POST">
   <div class="row">
@@ -17,6 +18,8 @@
     {% endfor %}
   </div>
   <button type="submit" class="btn btn-primary mt-3">Submit</button>
+  <a href="{{ url_for('employee_logout') }}" class="btn btn-danger mt-3">Logout</a>
 </form>
+</div>
 </body>
 </html>
