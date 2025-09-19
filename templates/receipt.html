@@ -3,26 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Receipt</title>
+<title>Receipt - Ossie's Recycling</title>
 <style>
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-h1 { color: #1e3a8a; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-th { background-color: #1e3a8a; color: white; }
-a.button { background-color: #1e3a8a; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; display: inline-block; transition: 0.3s; }
-a.button:hover { background-color: #3749c0; }
+body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; padding:20px; color:#333; }
+h1 { color:#1e3a8a; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+th { background:#1e3a8a; color:white; }
+.total { font-weight:bold; margin-top:15px; }
+.button { background:#1e3a8a; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:15px; display:inline-block; }
+.button:hover { background:#3749c0; }
 </style>
 </head>
 <body>
-<h1>Receipt</h1>
+<h1>Receipt - {{ employee_name }}</h1>
 <table>
-    <tr><th>Item</th><th>Amount</th></tr>
-    {% for item in items %}
-    <tr><td>{{ item.name }}</td><td>{{ item.amount }}</td></tr>
-    {% endfor %}
+<tr><th>Material</th><th>Weight (kg)</th><th>Cost</th></tr>
+{% set total = 0 %}
+{% for item in materials %}
+<tr>
+<td>{{ item.material }}</td>
+<td>{{ item.weight }}</td>
+<td>{{ item.cost }}</td>
+</tr>
+{% set total = total + item.cost %}
+{% endfor %}
 </table>
-<a href="/employee" class="button">Back</a>
+<p class="total">Total: {{ total }}</p>
+<a href="/employee" class="button">Back to Employee</a>
 </body>
 </html>
-
