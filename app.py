@@ -35,11 +35,6 @@ def login_required(f):
     return decorated
 
 def get_gspread_client():
-    """
-    Returns a gspread client authorized with a service account loaded from
-    the GOOGLE_CREDENTIALS environment variable (preferred) or local credentials.json file.
-    If gspread/google-auth is unavailable, returns None.
-    """
     if not GSHEET_AVAILABLE:
         return None
 
@@ -54,7 +49,6 @@ def get_gspread_client():
             app.logger.warning("Failed to load GOOGLE_CREDENTIALS from env: %s", e)
             creds = None
 
-    # fallback to credentials.json if present (not recommended for public repo)
     if creds is None and os.path.exists("credentials.json"):
         try:
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
@@ -73,13 +67,9 @@ def get_gspread_client():
         return None
 
 def get_prices():
-    """
-    Read a 'Prices' worksheet and return rows as list of dicts.
-    Returns (data, error_message)
-    """
     client = get_gspread_client()
     if client is None:
-        return None, "Google Sheets client unavailable. Check dependencies & credentials."
+        return None, "Google Sheets client unavailable. Check credentials."
 
     if not SHEET_ID:
         return None, "SHEET_ID not set in environment."
@@ -89,34 +79,71 @@ def get_prices():
         records = sheet.get_all_records()
         return records, None
     except Exception as e:
-        app.logger.exception("Error fetching sheet:")
-        # provide a helpful message for deploy troubleshooting
-        return None, f"Could not read sheet: {e}"
+        app.logger.exception("Error fetching Prices sheet:")
+        return None, f"Could not read Prices sheet: {e}"
 
+def get_transactions():
+    client = get_gspread_client()
+    if client is None:
+        return [], "Google Sheets client unavailable."
+    if not SHEET_ID:
+        return [], "SHEET_ID not set."
+    try:
+        sheet = client.open_by_key(SHEET_ID).worksheet("Transactions")
+        records = sheet.get_all_records()
+        return records, None
+    except Exception as e:
+        app.logger.exception("Error fetching Transactions sheet:")
+        return [], f"Could not read Transactions sheet: {e}"
+
+# ------------------- ROUTES -------------------
+
+# Home / Index
 @app.route("/")
 def index():
     return render_template("index.html")
 
+# Employee login / dashboard
 @app.route("/employee", methods=["GET", "POST"])
 def employee():
-    # Simple receipt simulation: the employee can create a quick receipt that prints on page
     if request.method == "POST":
-        client_name = request.form.get("client_name", "").strip()
-        amount = request.form.get("amount", "").strip()
-        description = request.form.get("description", "").strip()
-        # Simple validation
-        if not client_name or not amount:
-            flash("Client name and amount are required.", "danger")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        # simple validation: replace with real creds
+        if username == "employee" and password == "password":
+            session["employee_logged_in"] = True
+            return redirect(url_for("employee_dashboard"))
+        else:
+            flash("Invalid employee credentials", "danger")
             return redirect(url_for("employee"))
-        receipt = {
-            "client_name": client_name,
-            "amount": amount,
-            "description": description,
-        }
-        return render_template("employee.html", receipt=receipt)
-    return render_template("employee.html", receipt=None)
 
-# --------- Admin area ----------
+    return render_template("employee_login.html")
+
+@app.route("/employee/dashboard")
+def employee_dashboard():
+    if not session.get("employee_logged_in"):
+        return redirect(url_for("employee"))
+    transactions, err = get_transactions()
+    return render_template("employee.html", transactions=transactions, error=err)
+
+@app.route("/employee/payout")
+def employee_payout():
+    if not session.get("employee_logged_in"):
+        return redirect(url_for("employee"))
+    transactions, err = get_transactions()
+    return render_template("payout.html", transactions=transactions, error=err)
+
+@app.route("/employee/receipt/<int:id>")
+def employee_receipt(id):
+    if not session.get("employee_logged_in"):
+        return redirect(url_for("employee"))
+    transactions, err = get_transactions()
+    receipt = next((t for t in transactions if t.get("id") == id), None)
+    if not receipt:
+        return "Receipt not found", 404
+    return render_template("receipt.html", receipt=receipt)
+
+# Admin login / dashboard
 @app.route("/admin", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
@@ -141,7 +168,6 @@ def admin_logout():
 @app.route("/admin/dashboard")
 @login_required
 def admin_dashboard():
-    # a simple dashboard with quick links
     return render_template("admin_dashboard.html")
 
 @app.route("/admin/prices")
@@ -152,12 +178,20 @@ def admin_prices():
         return render_template("admin_prices.html", prices=[], error=err)
     return render_template("admin_prices.html", prices=prices, error=None)
 
-# healthcheck for Render
+@app.route("/admin/transactions")
+@login_required
+def admin_transactions():
+    transactions, err = get_transactions()
+    if err:
+        return render_template("admin_transactions.html", transactions=[], error=err)
+    return render_template("admin_transactions.html", transactions=transactions, error=None)
+
+# Healthcheck
 @app.route("/_health")
 def health():
     return jsonify({"status": "ok"})
 
-# error handlers
+# Error handlers
 @app.errorhandler(500)
 def server_error(e):
     return render_template("500.html", error=e), 500
@@ -166,4 +200,3 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "0") == "1"
     app.run(host="0.0.0.0", port=port, debug=debug)
-
