@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Ossie's Recycling</title>
-</head>
-<body>
-    <h1>Welcome to Ossie's Recycling</h1>
-    <a href="{{ url_for('employee') }}">Employee</a> |
-    <a href="{{ url_for('admin') }}">Admin</a>
-</body>
-</html>
-
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center">
+    <h2>Home</h2>
+    <p>Choose your role:</p>
+    <a href="{{ url_for('employee_login') }}" class="btn btn-success me-2">Employee</a>
+    <a href="{{ url_for('admin_login') }}" class="btn btn-warning">Admin</a>
+</div>
+{% endblock %}
