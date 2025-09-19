@@ -1,111 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Dashboard - Ossie's Recycling</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        h1 {
-            color: #1e3a8a;
-            font-size: 2rem;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-
-        a.button {
-            background-color: #1e3a8a;
-            color: white;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin: 10px;
-            display: inline-block;
-        }
-
-        a.button:hover {
-            background-color: #3749c0;
-        }
-
-        table {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #1e3a8a;
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            a.button {
-                padding: 10px 20px;
-                margin: 5px;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Login - Ossie's Recycling</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+h1 { color:#1e3a8a; margin-bottom:1rem; }
+form { display:flex; flex-direction:column; width:300px; }
+input { padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; }
+button { background:#1e3a8a; color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
+button:hover { background:#3749c0; }
+</style>
 </head>
 <body>
-    <h1>Employee Dashboard</h1>
-
-    <div class="buttons">
-        <a href="{{ url_for('employee_payout') }}" class="button">Payout</a>
-        <a href="{{ url_for('employee') }}" class="button">Create Receipt</a>
-        <a href="{{ url_for('index') }}" class="button">Logout</a>
-    </div>
-
-    {% if transactions %}
-        <h2 style="text-align:center;">Recent Transactions</h2>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Client</th>
-                <th>Amount</th>
-                <th>Description</th>
-                <th>Receipt</th>
-            </tr>
-            {% for t in transactions %}
-            <tr>
-                <td>{{ t.id or t['id'] }}</td>
-                <td>{{ t.client_name or t['client_name'] }}</td>
-                <td>{{ t.amount or t['amount'] }}</td>
-                <td>{{ t.description or t['description'] }}</td>
-                <td><a href="{{ url_for('employee_receipt', id=t.id or t['id']) }}">View</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% elif error %}
-        <p style="text-align:center; color:red;">{{ error }}</p>
-    {% else %}
-        <p style="text-align:center;">No transactions found.</p>
-    {% endif %}
+<h1>Employee Login</h1>
+<form method="POST">
+<label>Who's scaling today?</label>
+<input type="text" name="employee_name" placeholder="Enter your name" required>
+<button type="submit">Continue</button>
+</form>
 </body>
 </html>
-
