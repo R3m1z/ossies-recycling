@@ -174,7 +174,9 @@ def employee_payout():
 
         return redirect(url_for("employee_receipt"))
 
+    # GET request — render form
     return render_template("employee_payout.html", employee_name=employee_name, materials=materials)
+
 
 @app.route("/employee/receipt")
 @employee_required
