@@ -124,7 +124,7 @@ def employee_dashboard():
     if not session.get("employee_logged_in"):
         return redirect(url_for("employee"))
     transactions, err = get_transactions()
-    return render_template("employee.html", transactions=transactions, error=err)
+    return render_template("payout.html", transactions=transactions, error=err)
 
 @app.route("/employee/payout")
 def employee_payout():
