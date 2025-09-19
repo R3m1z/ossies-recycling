@@ -1,42 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Transactions</title>
-<style>
-body{font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
-h1{color:#1e3a8a;text-align:center;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{border:1px solid #ccc;padding:12px;text-align:center;}
-th{background:#1e3a8a;color:white;}
-button,a.button{padding:10px 20px;margin:5px;border-radius:5px;background:#1e3a8a;color:white;text-decoration:none;border:none;cursor:pointer;}
-button:hover,a.button:hover{background:#3749c0;}
-</style>
-</head>
-<body>
-<h1>Today's Transactions</h1>
-{% if transactions %}
-<table>
-<tr>
-<th>Employee</th>
-<th>Material</th>
-<th>Weight (kg)</th>
-<th>Price/kg</th>
-<th>Amount</th>
-</tr>
-{% for t in transactions %}
-<tr>
-<td>{{ t.employee }}</td>
-<td>{{ t.material }}</td>
-<td>{{ t.weight }}</td>
-<td>R{{ t.price }}</td>
-<td>R{{ t.amount }}</td>
-</tr>
-{% endfor %}
+{% extends "base.html" %}
+{% block content %}
+<h2>All Transactions</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Material</th>
+            <th>Weight</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.Date }}</td>
+            <td>{{ t.Employee }}</td>
+            <td>{{ t.Material }}</td>
+            <td>{{ t.Weight }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
-{% else %}
-<p style="text-align:center;">No transactions yet.</p>
-{% endif %}
-<a href="/admin/dashboard" class="button">Back to Dashboard</a>
-</body>
-</html>
+<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back</a>
+{% endblock %}
