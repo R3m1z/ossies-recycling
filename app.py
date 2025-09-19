@@ -1,19 +1,10 @@
 import os
 import json
+import uuid
 from datetime import datetime, date
 from functools import wraps
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash,
-)
-
-# Google Sheets libs
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -31,7 +22,7 @@ PRICES_SHEET_NAME = "Prices"
 PRICES_HEADERS = ["Material", "Price"]
 
 TRANSACTIONS_SHEET_NAME = "Transactions"
-TRANSACTIONS_HEADERS = ["Date", "Employee", "Material", "Weight", "Price", "Amount"]
+TRANSACTIONS_HEADERS = ["TransactionID","Date", "Employee", "Material", "Weight", "Price", "Amount"]
 
 # ---------- Google Sheets helpers ----------
 def sheets_enabled():
@@ -51,7 +42,7 @@ def ensure_worksheet(sheet_name, headers):
     try:
         ws = sh.worksheet(sheet_name)
     except gspread.WorksheetNotFound:
-        ws = sh.add_worksheet(title=sheet_name, rows=1000, cols=len(headers) + 3)
+        ws = sh.add_worksheet(title=sheet_name, rows=1000, cols=len(headers)+3)
         ws.append_row(headers)
     return ws
 
@@ -89,21 +80,24 @@ def append_transactions(employee_name, weight_dict):
         ws = ensure_worksheet(TRANSACTIONS_SHEET_NAME, TRANSACTIONS_HEADERS)
         materials = get_materials()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        transaction_id = str(uuid.uuid4())[:8]  # short unique ID
         rows = []
         for mat, weight in weight_dict.items():
             try:
                 w = float(weight)
             except:
                 w = 0.0
+            if w <= 0:
+                continue  # skip zero weights
             price = float(materials.get(mat, 0.0))
             amount = round(price * w, 2)
-            rows.append([now, employee_name, mat, w, price, amount])
+            rows.append([transaction_id, now, employee_name, mat, w, price, amount])
         for r in rows:
             ws.append_row(r)
-        return True, None
+        return transaction_id, None
     except Exception as e:
         app.logger.exception("append_transactions error")
-        return False, str(e)
+        return None, str(e)
 
 def get_transactions(all_rows=True):
     try:
@@ -153,6 +147,7 @@ def employee_login():
             return redirect(url_for("employee_login"))
         session["employee_name"] = name
         session.pop("weight_dict", None)
+        session.pop("transaction_id", None)
         return redirect(url_for("employee_payout"))
     return render_template("employee_login.html")
 
@@ -170,12 +165,12 @@ def employee_payout():
             weight_dict[mat] = weight
 
         session["weight_dict"] = weight_dict
-
-        success, err = append_transactions(employee_name, weight_dict)
-        if not success:
+        transaction_id, err = append_transactions(employee_name, weight_dict)
+        if err:
             flash(f"Warning: transaction not saved to sheet: {err}", "danger")
         else:
             flash("Transaction saved.", "success")
+            session["transaction_id"] = transaction_id
 
         return redirect(url_for("employee_receipt"))
 
@@ -187,6 +182,7 @@ def employee_receipt():
     employee_name = session.get("employee_name")
     weight_dict = session.get("weight_dict", {}) or {}
     prices = get_materials()
+    transaction_id = session.get("transaction_id", "")
 
     materials_for_receipt = {}
     total = 0.0
@@ -196,12 +192,13 @@ def employee_receipt():
             amount = round(weight * price, 2)
             materials_for_receipt[mat] = {'weight': weight, 'price': amount}
             total += amount
-
     total = round(total, 2)
+
     return render_template(
         "receipt.html",
         client_name=employee_name,
         date=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        transaction_id=transaction_id,
         materials=materials_for_receipt,
         total=total
     )
