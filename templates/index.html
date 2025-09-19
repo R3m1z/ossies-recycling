@@ -1,20 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Ossie's Recycling</title>
-    <style>
-        body { font-family: 'Segoe UI'; background:#f0f4f8; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0;}
-        h1{color:#1e3a8a;}
-        .buttons a {padding:12px 25px; margin:10px; border-radius:8px; color:white; background:#1e3a8a; text-decoration:none; font-weight:bold;}
-        .buttons a:hover {background:#3749c0;}
-    </style>
-</head>
-<body>
-<h1>Ossie's Recycling</h1>
-<div class="buttons">
-    <a href="/employee">Employee</a>
-    <a href="/admin">Admin</a>
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-4">Welcome to Ossie Recycle</h1>
+    <a href="{{ url_for('employee_login') }}" class="btn btn-success btn-lg me-3">Employee</a>
+    <a href="{{ url_for('admin_login') }}" class="btn btn-warning btn-lg">Admin</a>
 </div>
-</body>
-</html>
+{% endblock %}
