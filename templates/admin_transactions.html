@@ -13,10 +13,13 @@
     <tbody>
         {% for t in transactions %}
         <tr>
+            <td>{{ t.TransactionID }}</td>
             <td>{{ t.Date }}</td>
             <td>{{ t.Employee }}</td>
             <td>{{ t.Material }}</td>
             <td>{{ t.Weight }}</td>
+            <td>{{ t.Price }}</td>
+            <td>{{ t.Amount }}</td>
         </tr>
         {% endfor %}
     </tbody>
