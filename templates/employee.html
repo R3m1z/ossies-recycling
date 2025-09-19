@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Employee — Ossie's Recycling{% endblock %}
+{% block content %}
+  <h2>Employee Receipt</h2>
+
+  <form method="post" class="card formcard">
+    <label>Client name
+      <input name="client_name" placeholder="Mr. Smith" required>
+    </label>
+    <label>Amount (R)
+      <input name="amount" inputmode="decimal" placeholder="200.00" required>
+    </label>
+    <label>Description
+      <input name="description" placeholder="Grass cutting / waste">
+    </label>
+
+    <div class="row">
+      <button class="btn primary" type="submit">Create Receipt</button>
+      <a class="btn ghost" href="{{ url_for('index') }}">Back</a>
+    </div>
+  </form>
+
+  {% if receipt %}
+    <section class="card receipt">
+      <h3>Receipt</h3>
+      <div><strong>Client:</strong> {{ receipt.client_name }}</div>
+      <div><strong>Amount:</strong> R{{ receipt.amount }}</div>
+      <div><strong>Description:</strong> {{ receipt.description or '-' }}</div>
+      <div class="row">
+        <button class="btn secondary" onclick="window.print()">Print</button>
+        <a class="btn ghost" href="{{ url_for('employee') }}">New</a>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}
+
