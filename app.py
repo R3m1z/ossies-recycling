@@ -8,7 +8,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 app = Flask(__name__, template_folder="templates")
-app.secret_key = os.environ.get("SECRET_KEY", "replace_this_with_env_secret")
+app.secret_key = os.environ.get("SECRET_KEY", "Passw0rd@123")
 
 # Admin credentials
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
