@@ -15,7 +15,7 @@ except Exception:
 
 # Basic config
 app = Flask(__name__, static_folder="static", template_folder="templates")
-app.secret_key = os.environ.get("SECRET_KEY", "replace_this_with_env_secret")
+app.secret_key = os.environ.get("SECRET_KEY", "Passw0rd@123")
 
 # Admin credentials (put secure values in Render env)
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
