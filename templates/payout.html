@@ -3,19 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Payout</title>
+<title>Payout - Ossie's Recycling</title>
 <style>
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-h1 { color: #1e3a8a; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
-p { font-size: 1.2rem; margin-bottom: 2rem; text-align: center; }
-a.button { background-color: #1e3a8a; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; display: inline-block; transition: 0.3s; }
-a.button:hover { background-color: #3749c0; }
+body { font-family: 'Segoe UI', sans-serif; background:#f0f4f8; padding:20px; color:#333; }
+h1 { color:#1e3a8a; }
+table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+th { background:#1e3a8a; color:white; }
+input { width:80px; padding:5px; border-radius:5px; border:1px solid #ccc; }
+.button { background:#1e3a8a; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; margin-right:10px; }
+.button:hover { background:#3749c0; }
+.buttons { margin-top:20px; }
 </style>
 </head>
 <body>
-<h1>Payout</h1>
-<p>Total payout: {{ payout_amount }}</p>
+<h1>Ossie's Recycling - Logged in as {{ employee_name }}</h1>
+<form method="POST">
+<table>
+<tr><th>Material</th><th>Price per kg</th><th>Weight (kg)</th></tr>
+{% for row in prices %}
+<tr>
+<td>{{ row.Material }}</td>
+<td>{{ row.Price }}</td>
+<td><input type="number" name="amount_{{ loop.index0 }}" step="0.01" min="0"></td>
+</tr>
+{% endfor %}
+</table>
+<div class="buttons">
 <a href="/employee" class="button">Back</a>
+<button type="submit" class="button">Generate Receipt</button>
+</div>
+</form>
 </body>
 </html>
-
