@@ -2,35 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard - Ossie's Recycling</title>
+<title>Admin Dashboard</title>
 <style>
-body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; padding:20px; color:#333; }
-h1 { color:#1e3a8a; }
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#1e3a8a; color:white; }
-.button { background:#1e3a8a; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:15px; display:inline-block; }
-.button:hover { background:#3749c0; }
+body {font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
+h1{color:#1e3a8a;}
+a.button{display:inline-block;margin:10px;padding:12px 25px;background:#1e3a8a;color:white;border-radius:8px;text-decoration:none;}
+a.button:hover{background:#3749c0;}
 </style>
 </head>
 <body>
 <h1>Admin Dashboard</h1>
 <a href="/admin/prices" class="button">Manage Prices</a>
+<a href="/admin/transactions" class="button">View Transactions</a>
 <a href="/admin/logout" class="button">Logout</a>
-<h2>Today's Transactions</h2>
-<table>
-<tr>
-<th>Employee</th><th>Material</th><th>Weight</th><th>Cost</th>
-</tr>
-{% for t in transactions %}
-<tr>
-<td>{{ t.Employee }}</td>
-<td>{{ t.Material }}</td>
-<td>{{ t.Weight }}</td>
-<td>{{ t.Cost }}</td>
-</tr>
-{% endfor %}
-</table>
 </body>
 </html>
