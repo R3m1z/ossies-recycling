@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Payout</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payout</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+h1 { color: #1e3a8a; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
+p { font-size: 1.2rem; margin-bottom: 2rem; text-align: center; }
+a.button { background-color: #1e3a8a; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; display: inline-block; transition: 0.3s; }
+a.button:hover { background-color: #3749c0; }
+</style>
 </head>
 <body>
-    <h2>Payout for {{ session.get('employee') }}</h2>
-    <form method="POST">
-        {% for mat, price in prices %}
-            <label>{{ mat }} ({{ price }} per kg):</label>
-            <input type="number" name="{{ mat }}" step="0.01" min="0"><br>
-        {% endfor %}
-        <button type="submit">Calculate</button>
-    </form>
+<h1>Payout</h1>
+<p>Total payout: {{ payout_amount }}</p>
+<a href="/employee" class="button">Back</a>
 </body>
 </html>
 

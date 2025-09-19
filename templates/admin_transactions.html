@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Transactions</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Prices</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; }
+h1 { color: #1e3a8a; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+th { background-color: #1e3a8a; color: white; }
+a.button { background-color: #1e3a8a; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; display: inline-block; transition: 0.3s; }
+a.button:hover { background-color: #3749c0; }
+</style>
 </head>
 <body>
-    <h2>All Transactions</h2>
-    <table border="1">
-        <tr>
-            <th>Employee</th>
-            <th>Material</th>
-            <th>Weight</th>
-            <th>Cost</th>
-        </tr>
-        {% for row in transactions %}
-            <tr>
-                {% for col in row %}
-                    <td>{{ col }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </table>
-    <a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+<h1>Manage Prices</h1>
+<table>
+<tr><th>Service</th><th>Price</th></tr>
+{% for item in prices %}
+<tr><td>{{ item.service }}</td><td>{{ item.price }}</td></tr>
+{% endfor %}
+</table>
+<a href="/admin" class="button">Back</a>
 </body>
 </html>
 

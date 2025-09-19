@@ -1,13 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Ossie's Recycling</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Portal</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f0f4f8;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #333;
+    }
+    h1 { color: #1e3a8a; font-size: 2.5rem; margin-bottom: 1rem; }
+    .buttons { display: flex; flex-wrap: wrap; justify-content: center; }
+    a.button {
+        background-color: #1e3a8a;
+        color: white;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        margin: 10px;
+    }
+    a.button:hover { background-color: #3749c0; }
+    @media (max-width: 600px) {
+        h1 { font-size: 2rem; }
+        a.button { padding: 10px 20px; margin: 5px; }
+    }
+</style>
 </head>
 <body>
-    <h1>Welcome to Ossie's Recycling</h1>
-    <a href="{{ url_for('employee') }}">Employee</a> |
-    <a href="{{ url_for('admin') }}">Admin</a>
+<h1>Employee Portal</h1>
+<div class="buttons">
+    <a href="/employee/login" class="button">Login</a>
+    <a href="/" class="button">Back</a>
+</div>
 </body>
 </html>
 
