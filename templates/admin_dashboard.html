@@ -1,19 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<style>
-body {font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
-h1{color:#1e3a8a;}
-a.button{display:inline-block;margin:10px;padding:12px 25px;background:#1e3a8a;color:white;border-radius:8px;text-decoration:none;}
-a.button:hover{background:#3749c0;}
-</style>
-</head>
-<body>
-<h1>Admin Dashboard</h1>
-<a href="/admin/prices" class="button">Manage Prices</a>
-<a href="/admin/transactions" class="button">View Transactions</a>
-<a href="/admin/logout" class="button">Logout</a>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="mb-3">
+    <a href="{{ url_for('admin_prices') }}" class="btn btn-success me-2">Manage Prices</a>
+    <a href="{{ url_for('admin_transactions') }}" class="btn btn-info">View Transactions</a>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-danger float-end">Logout</a>
+</div>
+
+<h4>Recent Transactions</h4>
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Material</th>
+            <th>Weight</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.Date }}</td>
+            <td>{{ t.Employee }}</td>
+            <td>{{ t.Material }}</td>
+            <td>{{ t.Weight }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
