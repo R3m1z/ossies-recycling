@@ -24,7 +24,7 @@ ADMIN_PASS = os.environ.get("ADMIN_PASS", "password123")
 # Google sheet config
 SHEET_ID = os.environ.get("SHEET_ID", "").strip()
 # GOOGLE_CREDENTIALS should contain the JSON text of the service account key
-GOOGLE_CREDENTIALS = os.environ.get("GOOGLE_CREDENTIALS", None)
+GOOGLE_CREDENTIALS = os.environ.get("GOOGLE_CREDS_JSON", None)
 
 def login_required(f):
     @wraps(f)
