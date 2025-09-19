@@ -2,33 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Prices - Ossie's Recycling</title>
+<title>Manage Prices</title>
 <style>
-body { font-family:'Segoe UI',sans-serif; background:#f0f4f8; padding:20px; color:#333; }
-h1 { color:#1e3a8a; }
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#1e3a8a; color:white; }
-input { width:80px; padding:5px; border-radius:5px; border:1px solid #ccc; }
-.button { background:#1e3a8a; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:15px; display:inline-block; }
-.button:hover { background:#3749c0; }
+body{font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
+h1{color:#1e3a8a;text-align:center;}
+form{max-width:500px;margin:auto;}
+input,button{padding:10px;margin:5px;width:100%;}
+button{background:#1e3a8a;color:white;border:none;border-radius:5px;cursor:pointer;}
+button:hover{background:#3749c0;}
 </style>
 </head>
 <body>
 <h1>Manage Prices</h1>
+{% if error %}
+<p style="color:red;text-align:center;">{{ error }}</p>
+{% endif %}
 <form method="POST">
-<table>
-<tr><th>Material</th><th>Price per kg</th></tr>
-{% for row in prices %}
-<tr>
-<td>{{ row.Material }}</td>
-<td><input type="number" step="0.01" name="price_{{ loop.index0 }}" value="{{ row.Price }}"></td>
-</tr>
+{% for material, price in materials.items() %}
+<label>{{ material }}</label>
+<input type="number" step="0.01" name="{{ material }}" value="{{ price }}">
 {% endfor %}
-</table>
-<button type="submit" class="button">Update Prices</button>
-<a href="/admin/dashboard" class="button">Back to Dashboard</a>
+<button type="submit">Update Prices</button>
 </form>
+<a href="/admin/dashboard" class="button">Back to Dashboard</a>
 </body>
 </html>
