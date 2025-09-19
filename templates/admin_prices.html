@@ -1,29 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Manage Prices</title>
-<style>
-body{font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
-h1{color:#1e3a8a;text-align:center;}
-form{max-width:500px;margin:auto;}
-input,button{padding:10px;margin:5px;width:100%;}
-button{background:#1e3a8a;color:white;border:none;border-radius:5px;cursor:pointer;}
-button:hover{background:#3749c0;}
-</style>
-</head>
-<body>
-<h1>Manage Prices</h1>
-{% if error %}
-<p style="color:red;text-align:center;">{{ error }}</p>
-{% endif %}
-<form method="POST">
-{% for material, price in materials.items() %}
-<label>{{ material }}</label>
-<input type="number" step="0.01" name="{{ material }}" value="{{ price }}">
-{% endfor %}
-<button type="submit">Update Prices</button>
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage Prices</h2>
+<form method="post">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Current Price</th>
+                <th>New Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mat, price in materials.items() %}
+            <tr>
+                <td>{{ mat }}</td>
+                <td>R {{ price }}</td>
+                <td><input type="number" step="0.01" name="{{ mat }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Update Prices</button>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back</a>
 </form>
-<a href="/admin/dashboard" class="button">Back to Dashboard</a>
-</body>
-</html>
+{% endblock %}
