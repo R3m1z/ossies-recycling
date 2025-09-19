@@ -1,128 +1,169 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-import gspread
-from google.oauth2.service_account import Credentials
+import json
+from flask import (
+    Flask, render_template, request, redirect, url_for, session, flash, jsonify
+)
+from functools import wraps
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")  # Set a secure key in Render
+# Optional: spreadsheet support
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials
+    GSHEET_AVAILABLE = True
+except Exception:
+    GSHEET_AVAILABLE = False
 
-# -----------------------------
-# Google Sheets setup
-# -----------------------------
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-SHEET_ID = os.environ.get("1g6LBASqzygH2KFWdik4aj2iSJfr_jNibK0GOm4geYN4")  # Set your sheet ID as an environment variable
+# Basic config
+app = Flask(__name__, static_folder="static", template_folder="templates")
+app.secret_key = os.environ.get("SECRET_KEY", "replace_this_with_env_secret")
 
-# Load credentials safely from JSON file or env variable
-def get_gs_client():
-    creds_json = os.environ.get("GOOGLE_CREDS_JSON")
-    if not creds_json:
-        raise Exception("GOOGLE_CREDS_JSON environment variable not set")
-    creds_dict = eval(creds_json)  # JSON string stored in env variable
-    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    return client
+# Admin credentials (put secure values in Render env)
+ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
+ADMIN_PASS = os.environ.get("ADMIN_PASS", "password123")
+
+# Google sheet config
+SHEET_ID = os.environ.get("SHEET_ID", "").strip()
+# GOOGLE_CREDENTIALS should contain the JSON text of the service account key
+GOOGLE_CREDENTIALS = os.environ.get("GOOGLE_CREDENTIALS", None)
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin_login", next=request.path))
+        return f(*args, **kwargs)
+    return decorated
+
+def get_gspread_client():
+    """
+    Returns a gspread client authorized with a service account loaded from
+    the GOOGLE_CREDENTIALS environment variable (preferred) or local credentials.json file.
+    If gspread/google-auth is unavailable, returns None.
+    """
+    if not GSHEET_AVAILABLE:
+        return None
+
+    scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    creds = None
+
+    if GOOGLE_CREDENTIALS:
+        try:
+            info = json.loads(GOOGLE_CREDENTIALS)
+            creds = Credentials.from_service_account_info(info, scopes=scopes)
+        except Exception as e:
+            app.logger.warning("Failed to load GOOGLE_CREDENTIALS from env: %s", e)
+            creds = None
+
+    # fallback to credentials.json if present (not recommended for public repo)
+    if creds is None and os.path.exists("credentials.json"):
+        try:
+            creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+        except Exception as e:
+            app.logger.warning("Failed to load credentials.json: %s", e)
+            creds = None
+
+    if creds is None:
+        return None
+
+    try:
+        client = gspread.authorize(creds)
+        return client
+    except Exception as e:
+        app.logger.error("gspread.authorize error: %s", e)
+        return None
 
 def get_prices():
-    client = get_gs_client()
-    sheet = client.open_by_key(SHEET_ID).worksheet("Prices")
-    data = sheet.get_all_values()[1:]  # Skip header row
-    return [(row[0], float(row[1])) for row in data]
+    """
+    Read a 'Prices' worksheet and return rows as list of dicts.
+    Returns (data, error_message)
+    """
+    client = get_gspread_client()
+    if client is None:
+        return None, "Google Sheets client unavailable. Check dependencies & credentials."
 
-def update_prices(prices_dict):
-    client = get_gs_client()
-    sheet = client.open_by_key(SHEET_ID).worksheet("Prices")
-    all_data = sheet.get_all_values()
-    for i, row in enumerate(all_data[1:], start=2):
-        item = row[0]
-        if item in prices_dict:
-            sheet.update(f"B{i}", prices_dict[item])
+    if not SHEET_ID:
+        return None, "SHEET_ID not set in environment."
 
-def log_transaction(employee, items):
-    client = get_gs_client()
-    sheet = client.open_by_key(SHEET_ID).worksheet("Transactions")
-    for mat, weight, cost in items:
-        sheet.append_row([employee, mat, weight, cost])
+    try:
+        sheet = client.open_by_key(SHEET_ID).worksheet("Prices")
+        records = sheet.get_all_records()
+        return records, None
+    except Exception as e:
+        app.logger.exception("Error fetching sheet:")
+        # provide a helpful message for deploy troubleshooting
+        return None, f"Could not read sheet: {e}"
 
-# -----------------------------
-# Routes
-# -----------------------------
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.route('/')
-def home():
-    return render_template("home.html")
-
-# Employee login & payout
-@app.route('/employee', methods=['GET', 'POST'])
+@app.route("/employee", methods=["GET", "POST"])
 def employee():
-    if request.method == 'POST':
-        employee_name = request.form.get('employee_name')
-        session['employee'] = employee_name
-        return redirect(url_for('payout'))
-    return render_template("employee_select.html")
+    # Simple receipt simulation: the employee can create a quick receipt that prints on page
+    if request.method == "POST":
+        client_name = request.form.get("client_name", "").strip()
+        amount = request.form.get("amount", "").strip()
+        description = request.form.get("description", "").strip()
+        # Simple validation
+        if not client_name or not amount:
+            flash("Client name and amount are required.", "danger")
+            return redirect(url_for("employee"))
+        receipt = {
+            "client_name": client_name,
+            "amount": amount,
+            "description": description,
+        }
+        return render_template("employee.html", receipt=receipt)
+    return render_template("employee.html", receipt=None)
 
-@app.route('/payout', methods=['GET', 'POST'])
-def payout():
-    prices = get_prices()
-    if request.method == 'POST':
-        items = []
-        total_cost = 0
-        for mat, price in prices:
-            weight = float(request.form.get(mat, 0))
-            cost = weight * price
-            total_cost += cost
-            items.append((mat, weight, cost))
-        log_transaction(session.get('employee', 'Unknown'), items)
-        return render_template("receipt.html", items=items, total=total_cost, employee=session.get('employee'))
-    return render_template("payout.html", prices=prices)
-
-# Admin login
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if username == os.environ.get("ADMIN_USER") and password == os.environ.get("ADMIN_PASS"):
-            session['admin'] = True
-            return redirect(url_for('admin_dashboard'))
+# --------- Admin area ----------
+@app.route("/admin", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        user = request.form.get("username", "")
+        pwd = request.form.get("password", "")
+        if user == ADMIN_USER and pwd == ADMIN_PASS:
+            session["admin_logged_in"] = True
+            flash("Welcome to Admin.", "success")
+            next_url = request.args.get("next") or url_for("admin_dashboard")
+            return redirect(next_url)
         else:
-            flash("Invalid credentials", "danger")
+            flash("Invalid credentials.", "danger")
+            return redirect(url_for("admin_login"))
     return render_template("admin_login.html")
 
-@app.route('/admin/dashboard')
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin_logged_in", None)
+    flash("Logged out.", "info")
+    return redirect(url_for("admin_login"))
+
+@app.route("/admin/dashboard")
+@login_required
 def admin_dashboard():
-    if not session.get('admin'):
-        return redirect(url_for('admin'))
+    # a simple dashboard with quick links
     return render_template("admin_dashboard.html")
 
-@app.route('/admin/prices', methods=['GET', 'POST'])
+@app.route("/admin/prices")
+@login_required
 def admin_prices():
-    if not session.get('admin'):
-        return redirect(url_for('admin'))
-    prices = get_prices()
-    if request.method == 'POST':
-        new_prices = {k: float(v) for k, v in request.form.items()}
-        update_prices(new_prices)
-        flash("Prices updated successfully!", "success")
-        return redirect(url_for('admin_prices'))
-    return render_template("admin_prices.html", prices=prices)
+    prices, err = get_prices()
+    if err:
+        return render_template("admin_prices.html", prices=[], error=err)
+    return render_template("admin_prices.html", prices=prices, error=None)
 
-@app.route('/admin/transactions')
-def admin_transactions():
-    if not session.get('admin'):
-        return redirect(url_for('admin'))
-    client = get_gs_client()
-    sheet = client.open_by_key(SHEET_ID).worksheet("Transactions")
-    transactions = sheet.get_all_values()[1:]
-    return render_template("admin_transactions.html", transactions=transactions)
+# healthcheck for Render
+@app.route("/_health")
+def health():
+    return jsonify({"status": "ok"})
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('home'))
+# error handlers
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("500.html", error=e), 500
 
-# -----------------------------
-# Run app
-# -----------------------------
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug)
 
