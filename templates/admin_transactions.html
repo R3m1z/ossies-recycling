@@ -2,27 +2,41 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Prices</title>
+<title>Transactions</title>
 <style>
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-h1 { color: #1e3a8a; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-th { background-color: #1e3a8a; color: white; }
-a.button { background-color: #1e3a8a; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; display: inline-block; transition: 0.3s; }
-a.button:hover { background-color: #3749c0; }
+body{font-family:'Segoe UI'; background:#f0f4f8; margin:0; padding:20px;}
+h1{color:#1e3a8a;text-align:center;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #ccc;padding:12px;text-align:center;}
+th{background:#1e3a8a;color:white;}
+button,a.button{padding:10px 20px;margin:5px;border-radius:5px;background:#1e3a8a;color:white;text-decoration:none;border:none;cursor:pointer;}
+button:hover,a.button:hover{background:#3749c0;}
 </style>
 </head>
 <body>
-<h1>Manage Prices</h1>
+<h1>Today's Transactions</h1>
+{% if transactions %}
 <table>
-<tr><th>Service</th><th>Price</th></tr>
-{% for item in prices %}
-<tr><td>{{ item.service }}</td><td>{{ item.price }}</td></tr>
+<tr>
+<th>Employee</th>
+<th>Material</th>
+<th>Weight (kg)</th>
+<th>Price/kg</th>
+<th>Amount</th>
+</tr>
+{% for t in transactions %}
+<tr>
+<td>{{ t.employee }}</td>
+<td>{{ t.material }}</td>
+<td>{{ t.weight }}</td>
+<td>R{{ t.price }}</td>
+<td>R{{ t.amount }}</td>
+</tr>
 {% endfor %}
 </table>
-<a href="/admin" class="button">Back</a>
+{% else %}
+<p style="text-align:center;">No transactions yet.</p>
+{% endif %}
+<a href="/admin/dashboard" class="button">Back to Dashboard</a>
 </body>
 </html>
-
