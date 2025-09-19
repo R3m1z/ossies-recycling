@@ -7,35 +7,36 @@
 </head>
 <body class="p-3">
 <div class="container">
-  <h3>Receipt</h3>
-  <p><strong>Employee:</strong> {{ client_name }}</p>
-  <p><strong>Date:</strong> {{ date }}</p>
-  <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
+<h3>Receipt</h3>
+<p><strong>Employee:</strong> {{ client_name }}</p>
+<p><strong>Date:</strong> {{ date }}</p>
+<p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
 
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Material</th>
-        <th>Weight</th>
-        <th>Price (R/unit)</th>
-        <th>Amount (R)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for mat, item in materials.items() %}
-      <tr>
-        <td>{{ mat }}</td>
-        <td>{{ item.weight }}</td>
-        <td>{{ item.price/item.weight if item.weight>0 else 0 }}</td>
-        <td>{{ item.price }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <h5>Total: R{{ total }}</h5>
+<table class="table table-bordered">
+<thead>
+<tr>
+  <th>Material</th>
+  <th>Weight</th>
+  <th>Price per unit</th>
+  <th>Amount</th>
+</tr>
+</thead>
+<tbody>
+{% for mat, item in materials.items() %}
+<tr>
+  <td>{{ mat }}</td>
+  <td>{{ item.weight }}</td>
+  <td>{{ (item.price/item.weight)|round(2) }}</td>
+  <td>{{ item.price }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
 
-  <button onclick="window.print()" class="btn btn-success">Print</button>
-  <a href="{{ url_for('employee_payout') }}" class="btn btn-secondary">New Transaction</a>
+<h5>Total: R{{ total }}</h5>
+
+<button onclick="window.print()" class="btn btn-success">Print</button>
+<a href="{{ url_for('employee_payout') }}" class="btn btn-secondary">New Transaction</a>
 </div>
 </body>
 </html>
